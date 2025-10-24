@@ -1,0 +1,67 @@
+services:
+  hdhr-xmltv-converter:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: hdhr-xmltv-converter:latest
+    container_name: hdhr-xmltv-converter
+    restart: unless-stopped
+
+    environment:
+      # HD HomeRun Configuration
+      HDHR_HOST: ${HDHR_HOST:-hdhomerun.local}
+
+      # EPG Configuration
+      HDHR_EPG_DAYS: ${HDHR_EPG_DAYS:-7}
+      HDHR_EPG_HOURS_INCREMENT: ${HDHR_EPG_HOURS_INCREMENT:-3}
+
+      # Output Configuration
+      HDHR_OUTPUT_FILE_PATH: ${HDHR_OUTPUT_FILE_PATH:-/output/xmltv.xml}
+      HDHR_OUTPUT_FILENAME: ${HDHR_OUTPUT_FILENAME:-xmltv.xml}
+
+      # Scheduling Configuration
+      HDHR_SCHEDULE_CRON: ${HDHR_SCHEDULE_CRON:-"0 1 * * *"}
+      HDHR_SCHEDULE_TIMEZONE: ${HDHR_SCHEDULE_TIMEZONE:-UTC}
+
+      # Logging Configuration
+      HDHR_LOG_LEVEL: ${HDHR_LOG_LEVEL:-INFO}
+
+      # File Operation Settings
+      HDHR_ATOMIC_WRITES: ${HDHR_ATOMIC_WRITES:-true}
+      HDHR_BACKUP_PREVIOUS: ${HDHR_BACKUP_PREVIOUS:-false}
+
+    volumes:
+      # Output directory - mount to your desired location
+      - ${OUTPUT_VOLUME:-./output}:/output
+
+      # Optional: mount timezone data if needed
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+    # Network mode: use host network to access HD HomeRun on local network
+    # You can also use bridge mode and configure network as needed
+    network_mode: ${NETWORK_MODE:-host}
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "/app/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Example override for bridge network mode
+# Uncomment and modify if you don't want to use host network mode
+# networks:
+#   default:
+#     driver: bridge
+#     ipam:
+#       config:
+#         - subnet: 172.20.0.0/16

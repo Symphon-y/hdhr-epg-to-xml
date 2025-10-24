@@ -1,0 +1,32 @@
+# HD HomeRun XMLTV Converter Requirements
+
+# Core dependencies
+pydantic>=2.0.0,<3.0.0
+pydantic-settings>=2.0.0,<3.0.0
+croniter>=1.3.0,<2.0.0
+pytz>=2023.3
+
+# Python 3.11+ built-in modules used:
+# - xml.etree.ElementTree (for XMLTV generation)
+# - urllib.request (for HTTP requests)
+# - ssl (for HTTPS connections)
+# - json (for API response parsing)
+# - logging (for application logging)
+# - datetime (for time handling)
+# - pathlib (for file path operations)
+# - tempfile (for atomic file operations)
+# - signal (for graceful shutdown)
+# - os (for environment variables and file operations)
+# - sys (for system operations)
+# - time (for sleep operations)
+# - shutil (for file operations)
+# - dataclasses (for data structures)
+# - typing (for type hints)
+# - zoneinfo (for timezone handling, Python 3.9+)
+
+# Development dependencies (uncomment for development)
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+# black>=23.0.0
+# flake8>=6.0.0
+# mypy>=1.0.0

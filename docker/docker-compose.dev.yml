@@ -1,0 +1,64 @@
+services:
+  hdhr-xmltv-converter-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: development
+    image: hdhr-xmltv-converter:dev
+    container_name: hdhr-xmltv-converter-dev
+    restart: "no"  # Don't auto-restart in dev mode
+
+    environment:
+      # HD HomeRun Configuration
+      HDHR_HOST: ${HDHR_HOST:-hdhomerun.local}
+
+      # EPG Configuration
+      HDHR_EPG_DAYS: ${HDHR_EPG_DAYS:-1}  # Shorter for dev
+      HDHR_EPG_HOURS_INCREMENT: ${HDHR_EPG_HOURS_INCREMENT:-6}  # Fewer requests
+
+      # Output Configuration
+      HDHR_OUTPUT_FILE_PATH: ${HDHR_OUTPUT_FILE_PATH:-/output/xmltv.xml}
+      HDHR_OUTPUT_FILENAME: ${HDHR_OUTPUT_FILENAME:-xmltv.xml}
+
+      # Scheduling Configuration - Run once by default in dev
+      HDHR_SCHEDULE_CRON: ${HDHR_SCHEDULE_CRON:-""}
+      HDHR_SCHEDULE_TIMEZONE: ${HDHR_SCHEDULE_TIMEZONE:-UTC}
+
+      # Logging Configuration - More verbose in dev
+      HDHR_LOG_LEVEL: ${HDHR_LOG_LEVEL:-DEBUG}
+
+      # File Operation Settings
+      HDHR_ATOMIC_WRITES: ${HDHR_ATOMIC_WRITES:-true}
+      HDHR_BACKUP_PREVIOUS: ${HDHR_BACKUP_PREVIOUS:-true}  # Keep backups in dev
+
+      # Development flags
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+
+    volumes:
+      # Output directory
+      - ${OUTPUT_VOLUME:-./output}:/output
+
+      # Mount source code for development (optional - comment out for container testing)
+      - ../src:/app/src
+
+      # Mount timezone data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+    # Use bridge network for easier debugging
+    network_mode: ${NETWORK_MODE:-bridge}
+
+    # Override command for development
+    command: ["python", "-m", "hdhr_xmltv.main", "--run-once"]
+
+    # Logging configuration - more verbose for dev
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "2"
+
+    # Optional: Add debugging ports
+    # ports:
+    #   - "5678:5678"  # For debugpy
