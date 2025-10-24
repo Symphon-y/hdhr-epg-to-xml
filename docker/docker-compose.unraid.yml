@@ -1,0 +1,65 @@
+services:
+  hdhr-xmltv-converter:
+    image: travisredden/hdhr-xmltv-converter:latest
+    container_name: hdhr-xmltv-converter
+    restart: unless-stopped
+
+    environment:
+      # HD HomeRun Configuration - Update with your device IP
+      HDHR_HOST: ${HDHR_HOST:-192.168.1.100}
+      
+      # API Method - Use official XMLTV API (requires HD HomeRun DVR subscription)
+      HDHR_USE_OFFICIAL_XMLTV: ${HDHR_USE_OFFICIAL_XMLTV:-true}
+
+      # EPG Configuration
+      HDHR_EPG_DAYS: ${HDHR_EPG_DAYS:-7}
+      HDHR_EPG_HOURS_INCREMENT: ${HDHR_EPG_HOURS_INCREMENT:-3}
+
+      # Output Configuration
+      HDHR_OUTPUT_FILE_PATH: ${HDHR_OUTPUT_FILE_PATH:-/output/xmltv.xml}
+      HDHR_OUTPUT_FILENAME: ${HDHR_OUTPUT_FILENAME:-xmltv.xml}
+
+      # Scheduling Configuration
+      HDHR_SCHEDULE_CRON: ${HDHR_SCHEDULE_CRON:-"0 1 * * *"}
+      HDHR_SCHEDULE_TIMEZONE: ${HDHR_SCHEDULE_TIMEZONE:-America/New_York}
+
+      # Logging Configuration
+      HDHR_LOG_LEVEL: ${HDHR_LOG_LEVEL:-INFO}
+
+      # File Operation Settings
+      HDHR_ATOMIC_WRITES: ${HDHR_ATOMIC_WRITES:-true}
+      HDHR_BACKUP_PREVIOUS: ${HDHR_BACKUP_PREVIOUS:-false}
+
+    volumes:
+      # Output directory - Unraid path where XMLTV file will be stored
+      - ${OUTPUT_VOLUME:-/mnt/user/appdata/hdhr-xmltv/output}:/output
+      
+      # Optional: For Plex integration, mount directly to Plex config
+      # - /mnt/user/appdata/plex/xmltv:/output
+
+      # Timezone data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+    # Use host network to access HD HomeRun on local network
+    network_mode: host
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "/app/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Optional: Labels for Unraid organization
+    labels:
+      - "net.unraid.docker.managed=composeman"
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/Symphon-y/hdhr-epg-to-xml/main/docs/icon.png"
